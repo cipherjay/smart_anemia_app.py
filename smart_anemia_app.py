@@ -37,7 +37,7 @@ with tab2:
     folate = st.text_input("Folate (ng/mL)")
     morphology = st.selectbox("Morphology findings", (
         "None", "Microcytic Hypochromic", "Macrocytic", "Normocytic",
-        "Target Cells", "Sickle Cells", "Spherocytes", "Basophilic Stippling", "Schistocytes"
+        "Target Cells", "Sickle Cells", "Spherocytes", "Basophilic Stippling", "Schistocytes", "Other"
     ))
 
 def diagnose_anemia(hb_val, mcv_val, mch_val, mchc_val, ferritin_val, serum_iron_val, tibc_val, retic_val, vit_b12_val, folate_val, morphology, sex, age_val):
@@ -98,6 +98,7 @@ with tab3:
 
     if st.button("🔍 Diagnose"):
         try:
+            # التأكد من القيم المدخلة: إذا كانت فارغة، يتم تعيين None
             hb_val = float(hb) if hb else None
             mcv_val = float(mcv) if mcv else None
             mch_val = float(mch) if mch else None
@@ -110,11 +111,16 @@ with tab3:
             folate_val = float(folate) if folate else None
             age_val = int(age) if age else 0
 
-            severity, cell_size, chromia, cause = diagnose_anemia(
-                hb_val, mcv_val, mch_val, mchc_val,
-                ferritin_val, serum_iron_val, tibc_val,
-                retic_val, vit_b12_val, folate_val, morphology, sex, age_val
-            )
+            # إذا كانت المورفولوجيا فيها Basophilic Stippling، يتم تشخيص Lead Poisoning
+            if morphology == "Basophilic Stippling":
+                cause = "Lead Poisoning"
+            else:
+                # إذا كانت بعض القيم ناقصة، يتم حساب التشخيص بناءً على القيم المتاحة فقط
+                severity, cell_size, chromia, cause = diagnose_anemia(
+                    hb_val, mcv_val, mch_val, mchc_val,
+                    ferritin_val, serum_iron_val, tibc_val,
+                    retic_val, vit_b12_val, folate_val, morphology, sex, age_val
+                )
 
             diagnosis = f"{severity} {cell_size} {chromia} Anemia"
 
