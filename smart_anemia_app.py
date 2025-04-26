@@ -2,19 +2,34 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from io import StringIO
 
-st.set_page_config(page_title="Smart Anemia Diagnosis App", layout="wide")
+# إعداد الصفحة
+st.set_page_config(page_title="Smart Anemia Diagnosis", page_icon="🩺", layout="centered")
 
-# Password Protection
-st.title("🔒 Secure Access")
+# ======= صفحة كلمة المرور =======
+password = st.text_input("Enter Password to Access:", type="password")
 
-password = st.text_input("Enter Password:", type="password")
+correct_password = "J2M2"
 
-if password != "J2M2":
-    st.warning("Access denied. Wrong password!")
-    st.image("https://i.imgur.com/DPVM1fX.jpg", caption="Wrong Password! 🐰😂", width=300)
-    st.stop()
+if password:
+    if password != correct_password:
+        st.markdown(
+            """
+            <style>
+            .main {
+                background-color: black;
+                color: white;
+                text-align: center;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        st.image("https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", width=400)
+        st.markdown("<h1 style='text-align: center; color: white;'>Access Denied</h1>", unsafe_allow_html=True)
+        st.stop()
 
-# Start the actual application
+# ======= يبدأ التطبيق الحقيقي بعد كلمة المرور الصحيحة =======
+
 st.title("🩺 Smart Anemia Diagnosis Application")
 
 # Reset all fields
