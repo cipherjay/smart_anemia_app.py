@@ -1,144 +1,83 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-from io import StringIO
+from fpdf import FPDF
 
-st.set_page_config(page_title="Smart Anemia Diagnosis", page_icon="🩺", layout="centered")
+# App Title
+st.title("Smart Anemia Diagnosis App")
 
-# ======= Password Protection =======
-password = st.text_input("Enter Password to Access:", type="password")
+# Patient Information Section
+st.header("Patient Information")
 
-correct_password = "J2M2"
+# Patient Data Entry (All fields start empty)
+name = st.text_input("Patient Name", key="name")
+age = st.text_input("Age", key="age")
+gender = st.selectbox("Gender", ["Male", "Female"], key="gender")
+hb = st.text_input("Hemoglobin (g/dL)", key="hb")
+mcv = st.text_input("MCV (fL)", key="mcv")
+ferritin = st.text_input("Ferritin (ng/mL)", key="ferritin")
+vitamin_b12 = st.text_input("Vitamin B12 (pg/mL)", key="vitamin_b12")
+retic_count = st.text_input("Reticulocyte Count (%)", key="retic_count")
 
-if not password:
-    st.stop()
-
-if password != correct_password:
-    st.markdown(
-        """
-        <h1 style='text-align: center; color: red; font-size: 60px;'>
-        ACCESS DENIED
-        </h1>
-        """,
-        unsafe_allow_html=True
-    )
-    st.stop()
-
-# ======= Main Application =======
-
-st.title("🩺 Smart Anemia Diagnosis Application")
-
-# Reset all fields
-if "reset" not in st.session_state:
-    st.session_state.reset = False
-
-def reset_form():
-    st.session_state.clear()
-    st.session_state.reset = True
-    st.rerun()
-
-# Patient Information
-st.header("👤 Patient Basic Information")
-sex = st.selectbox("Sex", ("Male", "Female"), key="sex")
-age = st.number_input("Age (years)", min_value=0, max_value=120, value=0, step=1, key="age")
-
-# CBC Section
-st.header("🩸 Complete Blood Count (CBC)")
-hb = st.number_input("Hemoglobin (g/dL)", value=0.0, key="hb", placeholder="Enter Hemoglobin...")
-hct = st.number_input("Hematocrit (%)", value=0.0, key="hct", placeholder="Enter Hematocrit...")
-mcv = st.number_input("MCV (fL)", value=0.0, key="mcv", placeholder="Enter MCV...")
-mch = st.number_input("MCH (pg)", value=0.0, key="mch", placeholder="Enter MCH...")
-mchc = st.number_input("MCHC (g/dL)", value=0.0, key="mchc", placeholder="Enter MCHC...")
-rdw = st.number_input("RDW (%)", value=0.0, key="rdw", placeholder="Enter RDW...")
-rbc = st.number_input("RBC Count (million/µL)", value=0.0, key="rbc", placeholder="Enter RBC Count...")
-
-# Iron Studies
-st.header("🧪 Iron Studies")
-serum_iron = st.number_input("Serum Iron (µg/dL)", value=0.0, key="iron", placeholder="Enter Serum Iron...")
-ferritin = st.number_input("Ferritin (ng/mL)", value=0.0, key="ferritin", placeholder="Enter Ferritin...")
-tibc = st.number_input("TIBC (µg/dL)", value=0.0, key="tibc", placeholder="Enter TIBC...")
-transferrin_sat = st.number_input("Transferrin Saturation (%)", value=0.0, key="transf", placeholder="Enter Transferrin Saturation...")
-
-# Additional Blood Tests
-st.header("🧬 Additional Blood Tests")
-retic = st.number_input("Reticulocyte Count (%)", value=0.0, key="retic", placeholder="Enter Reticulocyte Count...")
-vit_b12 = st.number_input("Vitamin B12 (pg/mL)", value=0.0, key="b12", placeholder="Enter Vitamin B12...")
-folate = st.number_input("Folate (ng/mL)", value=0.0, key="folate", placeholder="Enter Folate...")
-ldh = st.number_input("LDH (U/L)", value=0.0, key="ldh", placeholder="Enter LDH...")
-indirect_bilirubin = st.number_input("Indirect Bilirubin (mg/dL)", value=0.0, key="bilirubin", placeholder="Enter Indirect Bilirubin...")
-haptoglobin = st.number_input("Haptoglobin (mg/dL)", value=0.0, key="hapto", placeholder="Enter Haptoglobin...")
-
-# Peripheral Blood Morphology
-st.header("🔬 Peripheral Blood Morphology")
-morphology = st.selectbox("Select Blood Cell Morphology:", (
-    "None", "Microcytic Hypochromic", "Macrocytic", "Normocytic Normochromic",
-    "Target Cells", "Sickle Cells", "Spherocytes", "Schistocytes", "Basophilic Stippling"
-), key="morphology")
+# Diagnosis Logic
+def diagnose_anemia(hb, mcv, ferritin, vitamin_b12, retic_count):
+    if hb < 12:
+        if mcv < 80:
+            if ferritin < 30:
+                return "Iron Deficiency Anemia"
+            else:
+                return "Thalassemia Minor"
+        elif mcv > 100:
+            if vitamin_b12 < 200:
+                return "Vitamin B12 Deficiency Anemia"
+            else:
+                return "Macrocytic Anemia (Other cause)"
+        else:
+            if retic_count > 2.0:
+                return "Hemolytic Anemia"
+            else:
+                return "Anemia of Chronic Disease"
+    else:
+        return "No Anemia"
 
 # Diagnose Button
-if st.button("🔍 Diagnose Anemia"):
-    diagnosis = []
-    recommendations = []
+if st.button("Diagnose"):
+    try:
+        hb_val = float(hb)
+        mcv_val = float(mcv)
+        ferritin_val = float(ferritin)
+        vitamin_b12_val = float(vitamin_b12)
+        retic_count_val = float(retic_count)
 
-    if hb < 13 and hb > 0:
-        if mcv < 80:
-            if ferritin < 30 and serum_iron < 60 and tibc > 400:
-                diagnosis.append("Iron Deficiency Anemia")
-                recommendations.append("Recommend iron supplementation, dietary counseling, and investigation for chronic blood loss.")
-            elif morphology == "Target Cells" or rbc > 5.5:
-                diagnosis.append("Possible Thalassemia")
-                recommendations.append("Suggest hemoglobin electrophoresis and genetic counseling.")
-            elif morphology == "Basophilic Stippling":
-                diagnosis.append("Possible Lead Poisoning")
-                recommendations.append("Recommend blood lead level testing and environmental assessment.")
-            else:
-                diagnosis.append("Microcytic Anemia - Further investigation needed.")
-                recommendations.append("Suggest iron studies and hemoglobin analysis.")
-        elif mcv > 100:
-            if vit_b12 < 200 or folate < 3:
-                diagnosis.append("Megaloblastic Anemia (Vitamin B12 or Folate Deficiency)")
-                recommendations.append("Initiate Vitamin B12 or Folate supplementation and evaluate gastrointestinal absorption disorders.")
-            else:
-                diagnosis.append("Macrocytic Anemia - Further investigation needed.")
-                recommendations.append("Investigate liver disease, alcoholism, or hypothyroidism.")
-        else:
-            if retic > 2.5:
-                if morphology == "Schistocytes":
-                    diagnosis.append("Hemolytic Anemia")
-                    recommendations.append("Perform Direct Coombs test, reticulocyte count, LDH, and peripheral smear review.")
-                elif morphology == "Spherocytes":
-                    diagnosis.append("Hereditary Spherocytosis or Autoimmune Hemolytic Anemia")
-                    recommendations.append("Recommend Direct Antiglobulin Test (DAT) and osmotic fragility test.")
-                else:
-                    diagnosis.append("Normocytic Anemia with High Reticulocytes - Possible hemolysis or acute blood loss.")
-                    recommendations.append("Evaluate for hemolysis or bleeding sources.")
-            else:
-                if ferritin > 100 and serum_iron < 60:
-                    diagnosis.append("Anemia of Chronic Disease")
-                    recommendations.append("Manage underlying chronic inflammation, infection, or malignancy.")
-                else:
-                    diagnosis.append("Normocytic Anemia - Further investigation needed.")
-                    recommendations.append("Full clinical evaluation recommended.")
-    elif hb >= 13:
-        diagnosis.append("No Anemia Detected")
-        recommendations.append("No action needed unless clinically indicated. Follow-up as appropriate.")
+        diagnosis = diagnose_anemia(hb_val, mcv_val, ferritin_val, vitamin_b12_val, retic_count_val)
+        st.subheader("Diagnosis Result:")
+        st.success(f"{diagnosis}")
 
-    st.subheader("📝 Diagnosis Result:")
-    for d in diagnosis:
-        st.success(f"✔️ {d}")
+        # Option to save as PDF
+        if st.checkbox("Save Patient Data as PDF"):
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            pdf.cell(200, 10, txt="Patient Report", ln=True, align="C")
+            pdf.ln(10)
+            pdf.cell(200, 10, txt=f"Name: {name}", ln=True)
+            pdf.cell(200, 10, txt=f"Age: {age}", ln=True)
+            pdf.cell(200, 10, txt=f"Gender: {gender}", ln=True)
+            pdf.cell(200, 10, txt=f"Hemoglobin: {hb} g/dL", ln=True)
+            pdf.cell(200, 10, txt=f"MCV: {mcv} fL", ln=True)
+            pdf.cell(200, 10, txt=f"Ferritin: {ferritin} ng/mL", ln=True)
+            pdf.cell(200, 10, txt=f"Vitamin B12: {vitamin_b12} pg/mL", ln=True)
+            pdf.cell(200, 10, txt=f"Reticulocyte Count: {retic_count}%", ln=True)
+            pdf.cell(200, 10, txt=f"Diagnosis: {diagnosis}", ln=True)
 
-    st.subheader("📌 Recommendations:")
-    for rec in recommendations:
-        st.info(f"ℹ️ {rec}")
+            pdf_output_path = f"/mnt/data/{name}_report.pdf"
+            pdf.output(pdf_output_path)
+            with open(pdf_output_path, "rb") as file:
+                st.download_button(label="Download PDF", data=file, file_name=f"{name}_report.pdf", mime="application/pdf")
+    except ValueError:
+        st.error("Please make sure all numeric fields are filled correctly.")
 
-# Reset button
-if st.button("➕ Enter New Patient"):
-    reset_form()
-
-# Footer
-st.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
-st.markdown(
-    "<div style='text-align:center; font-size:22px; color:#007BFF; font-weight:bold;'>"
-    "Coder: Jk"
-    "</div>",
-    unsafe_allow_html=True
-)
+# Button to enter new patient (reset form)
+if st.button("Enter New Patient"):
+    for key in ["name", "age", "gender", "hb", "mcv", "ferritin", "vitamin_b12", "retic_count"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.rerun()
