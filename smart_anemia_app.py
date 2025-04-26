@@ -1,10 +1,7 @@
 import streamlit as st
 from fpdf import FPDF
 
-# App Title
 st.title("Smart Anemia Diagnosis App")
-
-# Patient Information Section
 st.header("Patient Information")
 
 # Patient Data Entry (All fields start empty)
@@ -20,6 +17,8 @@ retic_count = st.text_input("Reticulocyte Count (%)", key="retic_count")
 # Diagnosis Logic
 def diagnose_anemia(hb, mcv, ferritin, vitamin_b12, retic_count):
     if hb < 12:
+        if retic_count < 0.5:
+            return "Aplastic Anemia"
         if mcv < 80:
             if ferritin < 30:
                 return "Iron Deficiency Anemia"
@@ -33,6 +32,8 @@ def diagnose_anemia(hb, mcv, ferritin, vitamin_b12, retic_count):
         else:
             if retic_count > 2.0:
                 return "Hemolytic Anemia"
+            elif ferritin > 200:
+                return "Anemia due to Chronic Kidney Disease"
             else:
                 return "Anemia of Chronic Disease"
     else:
@@ -72,10 +73,11 @@ if st.button("Diagnose"):
             pdf.output(pdf_output_path)
             with open(pdf_output_path, "rb") as file:
                 st.download_button(label="Download PDF", data=file, file_name=f"{name}_report.pdf", mime="application/pdf")
-    except ValueError:
-        st.error("Please make sure all numeric fields are filled correctly.")
 
-# Button to enter new patient (reset form)
+    except ValueError:
+        st.error("Please fill all numeric fields correctly.")
+
+# Button to reset form
 if st.button("Enter New Patient"):
     for key in ["name", "age", "gender", "hb", "mcv", "ferritin", "vitamin_b12", "retic_count"]:
         if key in st.session_state:
