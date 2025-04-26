@@ -5,30 +5,26 @@ from io import StringIO
 # إعداد الصفحة
 st.set_page_config(page_title="Smart Anemia Diagnosis", page_icon="🩺", layout="centered")
 
-# ======= صفحة كلمة المرور =======
+# ======= Password Protection =======
 password = st.text_input("Enter Password to Access:", type="password")
 
 correct_password = "J2M2"
 
-if password:
-    if password != correct_password:
-        st.markdown(
-            """
-            <style>
-            .main {
-                background-color: black;
-                color: white;
-                text-align: center;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-        st.image("https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif", width=400)
-        st.markdown("<h1 style='text-align: center; color: white;'>Access Denied</h1>", unsafe_allow_html=True)
-        st.stop()
+if not password:
+    st.stop()
 
-# ======= يبدأ التطبيق الحقيقي بعد كلمة المرور الصحيحة =======
+if password != correct_password:
+    st.markdown(
+        """
+        <h1 style='text-align: center; color: red; font-size: 60px;'>
+        ACCESS DENIED
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    st.stop()
+
+# ======= Start the main application after correct password =======
 
 st.title("🩺 Smart Anemia Diagnosis Application")
 
