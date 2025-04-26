@@ -124,18 +124,52 @@ with tab3:
             if severity == "Severe" or cause in ["Sickle Cell Disease", "Possible Aplastic Anemia"]:
                 st.error("⚠️ WARNING: Critical Anemia detected! Immediate action required.")
 
-            st.subheader("📊 Test Results Overview")
-            results = {
-                "Hb": hb_val,
-                "MCV": mcv_val,
-                "MCH": mch_val,
-                "MCHC": mchc_val,
-                "Ferritin": ferritin_val,
-                "Iron": serum_iron_val
-            }
-            fig, ax = plt.subplots()
-            ax.bar(results.keys(), results.values())
-            st.pyplot(fig)
+            st.subheader("⚠️ Abnormal Test Results")
+            abnormal_results = {}
+            if hb_val < 10:
+                abnormal_results["Hemoglobin"] = hb_val
+            if mcv_val < 80:
+                abnormal_results["MCV"] = mcv_val
+            if mch_val < 27:
+                abnormal_results["MCH"] = mch_val
+            if mchc_val < 32:
+                abnormal_results["MCHC"] = mchc_val
+            if ferritin_val < 30:
+                abnormal_results["Ferritin"] = ferritin_val
+            if serum_iron_val < 50:
+                abnormal_results["Serum Iron"] = serum_iron_val
+            if tibc_val > 400:
+                abnormal_results["TIBC"] = tibc_val
+            if retic_val > 2.5:
+                abnormal_results["Reticulocyte Count"] = retic_val
+            if vit_b12_val < 200:
+                abnormal_results["Vitamin B12"] = vit_b12_val
+            if folate_val < 3:
+                abnormal_results["Folate"] = folate_val
+
+            if abnormal_results:
+                for test, value in abnormal_results.items():
+                    st.markdown(f"**{test}:** {value} (Abnormal)", unsafe_allow_html=True)
+
+            st.subheader("💡 Recommendations")
+            if cause == "Iron Deficiency Anemia":
+                st.info("✅ **Recommendation:** Start oral iron supplementation. Consider gastrointestinal evaluation to check for bleeding sources.")
+            elif cause == "Thalassemia Minor":
+                st.info("✅ **Recommendation:** No iron therapy required unless deficiency is confirmed. Refer for hemoglobin electrophoresis if needed.")
+            elif cause == "Vitamin B12 Deficiency":
+                st.info("✅ **Recommendation:** Start Vitamin B12 injections or high-dose oral supplements.")
+            elif cause == "Lead Poisoning":
+                st.info("✅ **Recommendation:** Order blood lead level and eliminate environmental exposure. Refer to a specialist.")
+            elif cause == "Sickle Cell Disease":
+                st.info("✅ **Recommendation:** Immediate referral to hematology if crisis suspected. Pain management and hydration are crucial.")
+            elif cause == "Aplastic Anemia":
+                st.info("✅ **Recommendation:** Urgent referral to hematology. Bone marrow biopsy may be required.")
+            elif cause == "Folate Deficiency":
+                st.info("✅ **Recommendation:** Start folic acid supplementation.")
+            elif cause == "Hemolytic Anemia":
+                st.info("✅ **Recommendation:** Perform Coombs test and check LDH and haptoglobin levels.")
+            elif cause == "Anemia of Chronic Disease":
+                st.info("✅ **Recommendation:** Manage underlying chronic disease (e.g., infection, inflammatory condition).")
 
             st.subheader("📄 Patient Report")
             report = f"""
