@@ -18,33 +18,33 @@ st.title("🩺 Smart Anemia Diagnosis Application")
 # Patient Info
 st.header("👤 Patient Basic Information")
 sex = st.selectbox("Sex", ("Male", "Female"), key="sex")
-age = st.number_input("Age (years)", min_value=0, max_value=120, value=30, step=1, key="age")
+age = st.number_input("Age (years)", min_value=0, max_value=120, value=0, step=1, key="age")
 
 # CBC Section
 st.header("🩸 Complete Blood Count (CBC)")
-hb = st.number_input("Hemoglobin (g/dL)", value=13.5, key="hb")
-hct = st.number_input("Hematocrit (%)", value=40.0, key="hct")
-mcv = st.number_input("MCV (fL)", value=85.0, key="mcv")
-mch = st.number_input("MCH (pg)", value=28.0, key="mch")
-mchc = st.number_input("MCHC (g/dL)", value=33.0, key="mchc")
-rdw = st.number_input("RDW (%)", value=13.0, key="rdw")
-rbc = st.number_input("RBC Count (million/µL)", value=5.0, key="rbc")
+hb = st.number_input("Hemoglobin (g/dL)", value=0.0, key="hb", placeholder="Enter Hemoglobin...")
+hct = st.number_input("Hematocrit (%)", value=0.0, key="hct", placeholder="Enter Hematocrit...")
+mcv = st.number_input("MCV (fL)", value=0.0, key="mcv", placeholder="Enter MCV...")
+mch = st.number_input("MCH (pg)", value=0.0, key="mch", placeholder="Enter MCH...")
+mchc = st.number_input("MCHC (g/dL)", value=0.0, key="mchc", placeholder="Enter MCHC...")
+rdw = st.number_input("RDW (%)", value=0.0, key="rdw", placeholder="Enter RDW...")
+rbc = st.number_input("RBC Count (million/µL)", value=0.0, key="rbc", placeholder="Enter RBC Count...")
 
 # Iron Studies
 st.header("🧪 Iron Studies")
-serum_iron = st.number_input("Serum Iron (µg/dL)", value=100.0, key="iron")
-ferritin = st.number_input("Ferritin (ng/mL)", value=100.0, key="ferritin")
-tibc = st.number_input("TIBC (µg/dL)", value=300.0, key="tibc")
-transferrin_sat = st.number_input("Transferrin Saturation (%)", value=30.0, key="transf")
+serum_iron = st.number_input("Serum Iron (µg/dL)", value=0.0, key="iron", placeholder="Enter Serum Iron...")
+ferritin = st.number_input("Ferritin (ng/mL)", value=0.0, key="ferritin", placeholder="Enter Ferritin...")
+tibc = st.number_input("TIBC (µg/dL)", value=0.0, key="tibc", placeholder="Enter TIBC...")
+transferrin_sat = st.number_input("Transferrin Saturation (%)", value=0.0, key="transf", placeholder="Enter Transferrin Saturation...")
 
 # Additional Tests
 st.header("🧬 Additional Blood Tests")
-retic = st.number_input("Reticulocyte Count (%)", value=1.5, key="retic")
-vit_b12 = st.number_input("Vitamin B12 (pg/mL)", value=400.0, key="b12")
-folate = st.number_input("Folate (ng/mL)", value=10.0, key="folate")
-ldh = st.number_input("LDH (U/L)", value=200.0, key="ldh")
-indirect_bilirubin = st.number_input("Indirect Bilirubin (mg/dL)", value=0.8, key="bilirubin")
-haptoglobin = st.number_input("Haptoglobin (mg/dL)", value=150.0, key="hapto")
+retic = st.number_input("Reticulocyte Count (%)", value=0.0, key="retic", placeholder="Enter Reticulocyte Count...")
+vit_b12 = st.number_input("Vitamin B12 (pg/mL)", value=0.0, key="b12", placeholder="Enter Vitamin B12...")
+folate = st.number_input("Folate (ng/mL)", value=0.0, key="folate", placeholder="Enter Folate...")
+ldh = st.number_input("LDH (U/L)", value=0.0, key="ldh", placeholder="Enter LDH...")
+indirect_bilirubin = st.number_input("Indirect Bilirubin (mg/dL)", value=0.0, key="bilirubin", placeholder="Enter Indirect Bilirubin...")
+haptoglobin = st.number_input("Haptoglobin (mg/dL)", value=0.0, key="hapto", placeholder="Enter Haptoglobin...")
 
 # Morphology
 st.header("🔬 Peripheral Blood Morphology")
@@ -56,18 +56,18 @@ morphology = st.selectbox("Select Blood Cell Morphology:", (
 # Classification display
 classification = []
 
-if mcv < 80:
+if mcv < 80 and mcv > 0:
     classification.append("Microcytic")
 elif mcv > 100:
     classification.append("Macrocytic")
-else:
+elif mcv >= 80 and mcv <= 100 and mcv > 0:
     classification.append("Normocytic")
 
 if mch < 27 or mchc < 31:
     classification.append("Hypochromic")
 elif 27 <= mch <= 33 and 31 <= mchc <= 36:
     classification.append("Normochromic")
-else:
+elif mch > 33:
     classification.append("Hyperchromic")
 
 if classification:
@@ -78,7 +78,7 @@ if st.button("🔍 Diagnose Anemia"):
     diagnosis = []
     recommendations = []
 
-    if hb < 13:
+    if hb < 13 and hb > 0:
         if mcv < 80:
             if ferritin < 30 and serum_iron < 60 and tibc > 400:
                 diagnosis.append("🩸 Iron Deficiency Anemia")
@@ -117,7 +117,7 @@ if st.button("🔍 Diagnose Anemia"):
                 else:
                     diagnosis.append("📋 Normocytic Anemia - Further Investigation Needed")
                     recommendations.append("- Full clinical evaluation recommended.")
-    else:
+    elif hb >= 13:
         diagnosis.append("✅ No Anemia Detected")
         recommendations.append("No further action needed unless clinically indicated.")
 
@@ -159,4 +159,9 @@ if st.button("➕ Enter New Patient"):
 
 # Footer
 st.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
-st.markdown("<center><small>Coder: Jk</small></center>", unsafe_allow_html=True)
+st.markdown(
+    "<div style='text-align:center; font-size:22px; color:#007BFF; font-weight:bold;'>"
+    "Coder: Jk"
+    "</div>",
+    unsafe_allow_html=True
+)
