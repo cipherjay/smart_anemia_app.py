@@ -4,6 +4,19 @@ from io import StringIO
 
 st.set_page_config(page_title="Smart Anemia Diagnosis App", layout="wide")
 
+# Password Protection
+st.title("🔒 Secure Access")
+
+password = st.text_input("Enter Password:", type="password")
+
+if password != "J2M2":
+    st.warning("Access denied. Wrong password!")
+    st.image("https://i.imgur.com/DPVM1fX.jpg", caption="Wrong Password! 🐰😂", width=300)
+    st.stop()
+
+# Start the actual application
+st.title("🩺 Smart Anemia Diagnosis Application")
+
 # Reset all fields
 if "reset" not in st.session_state:
     st.session_state.reset = False
@@ -13,9 +26,7 @@ def reset_form():
     st.session_state.reset = True
     st.experimental_rerun()
 
-st.title("🩺 Smart Anemia Diagnosis Application")
-
-# Patient Info
+# Patient Information
 st.header("👤 Patient Basic Information")
 sex = st.selectbox("Sex", ("Male", "Female"), key="sex")
 age = st.number_input("Age (years)", min_value=0, max_value=120, value=0, step=1, key="age")
@@ -37,7 +48,7 @@ ferritin = st.number_input("Ferritin (ng/mL)", value=0.0, key="ferritin", placeh
 tibc = st.number_input("TIBC (µg/dL)", value=0.0, key="tibc", placeholder="Enter TIBC...")
 transferrin_sat = st.number_input("Transferrin Saturation (%)", value=0.0, key="transf", placeholder="Enter Transferrin Saturation...")
 
-# Additional Tests
+# Additional Blood Tests
 st.header("🧬 Additional Blood Tests")
 retic = st.number_input("Reticulocyte Count (%)", value=0.0, key="retic", placeholder="Enter Reticulocyte Count...")
 vit_b12 = st.number_input("Vitamin B12 (pg/mL)", value=0.0, key="b12", placeholder="Enter Vitamin B12...")
@@ -46,114 +57,60 @@ ldh = st.number_input("LDH (U/L)", value=0.0, key="ldh", placeholder="Enter LDH.
 indirect_bilirubin = st.number_input("Indirect Bilirubin (mg/dL)", value=0.0, key="bilirubin", placeholder="Enter Indirect Bilirubin...")
 haptoglobin = st.number_input("Haptoglobin (mg/dL)", value=0.0, key="hapto", placeholder="Enter Haptoglobin...")
 
-# Morphology
+# Peripheral Blood Morphology
 st.header("🔬 Peripheral Blood Morphology")
 morphology = st.selectbox("Select Blood Cell Morphology:", (
     "None", "Microcytic Hypochromic", "Macrocytic", "Normocytic Normochromic",
     "Target Cells", "Sickle Cells", "Spherocytes", "Schistocytes", "Basophilic Stippling"
 ), key="morphology")
 
-# Classification display
-classification = []
+# CBC parameter evaluation based on sex and age
+st.header("📈 Parameter Evaluation")
 
-if mcv < 80 and mcv > 0:
-    classification.append("Microcytic")
-elif mcv > 100:
-    classification.append("Macrocytic")
-elif mcv >= 80 and mcv <= 100 and mcv > 0:
-    classification.append("Normocytic")
+# Determine normal ranges based on sex and age
+if age < 12:
+    hb_low, hb_high = 11, 13.5
+elif sex == "Male":
+    hb_low, hb_high = 13, 17
+else:
+    hb_low, hb_high = 12, 16
 
-if mch < 27 or mchc < 31:
-    classification.append("Hypochromic")
-elif 27 <= mch <= 33 and 31 <= mchc <= 36:
-    classification.append("Normochromic")
-elif mch > 33:
-    classification.append("Hyperchromic")
+# Normal ranges for other parameters
+normal_ranges = {
+    "MCV": (80, 100),
+    "MCH": (27, 33),
+    "MCHC": (31, 36),
+    "RDW": (11.5, 14.5),
+    "RBC": (4.5, 6.0),
+    "Serum Iron": (60, 170),
+    "Ferritin": (30, 300),
+    "TIBC": (250, 400),
+    "Transferrin Saturation": (20, 50)
+}
 
-if classification:
-    st.info(f"Based on CBC values, cells appear to be: **{' / '.join(classification)}**")
-
-# Diagnosis
-if st.button("🔍 Diagnose Anemia"):
-    diagnosis = []
-    recommendations = []
-
-    if hb < 13 and hb > 0:
-        if mcv < 80:
-            if ferritin < 30 and serum_iron < 60 and tibc > 400:
-                diagnosis.append("🩸 Iron Deficiency Anemia")
-                recommendations.append("- Recommend iron supplements and dietary adjustments.")
-            elif morphology == "Target Cells" or rbc > 5.5:
-                diagnosis.append("🧬 Possible Thalassemia")
-                recommendations.append("- Recommend Hemoglobin Electrophoresis test.")
-            elif morphology == "Basophilic Stippling":
-                diagnosis.append("☠️ Possible Lead Poisoning")
-                recommendations.append("- Recommend Blood Lead Level testing and chelation therapy if necessary.")
-            else:
-                diagnosis.append("📋 Microcytic Anemia - Further Investigation Needed")
-                recommendations.append("- Suggest iron studies and hemoglobin analysis.")
-        elif mcv > 100:
-            if vit_b12 < 200 or folate < 3:
-                diagnosis.append("🔬 Megaloblastic Anemia (Vitamin B12 or Folate Deficiency)")
-                recommendations.append("- Recommend Vitamin B12 and Folate supplementation.")
-            else:
-                diagnosis.append("📋 Macrocytic Anemia - Further Investigation Needed")
-                recommendations.append("- Investigate for liver disease, alcoholism, or hypothyroidism.")
+# Function to show indicator arrows
+def show_indicator(value, low, high, label):
+    if value != 0.0:
+        if value < low:
+            st.write(f"{label}: ⬇️ Low")
+        elif value > high:
+            st.write(f"{label}: ⬆️ High")
         else:
-            if retic > 2.5:
-                if morphology == "Schistocytes":
-                    diagnosis.append("⚡ Hemolytic Anemia")
-                    recommendations.append("- Suggest Coombs test and hemolysis workup.")
-                elif morphology == "Spherocytes":
-                    diagnosis.append("⚡ Hereditary Spherocytosis or Autoimmune Hemolytic Anemia")
-                    recommendations.append("- Recommend Direct Antiglobulin Test (DAT).")
-                else:
-                    diagnosis.append("⚡ Normocytic Anemia with High Reticulocytes - Possible Hemolysis or Bleeding")
-                    recommendations.append("- Investigate for sources of bleeding or hemolysis.")
-            else:
-                if ferritin > 100 and serum_iron < 60:
-                    diagnosis.append("📋 Anemia of Chronic Disease")
-                    recommendations.append("- Investigate for chronic infections, inflammation, or malignancies.")
-                else:
-                    diagnosis.append("📋 Normocytic Anemia - Further Investigation Needed")
-                    recommendations.append("- Full clinical evaluation recommended.")
-    elif hb >= 13:
-        diagnosis.append("✅ No Anemia Detected")
-        recommendations.append("No further action needed unless clinically indicated.")
+            st.write(f"{label}: ✅ Normal")
 
-    st.subheader("📝 Diagnosis Result:")
-    for d in diagnosis:
-        st.success(d)
+# Apply indicators
+show_indicator(hb, hb_low, hb_high, "Hemoglobin")
+show_indicator(mcv, *normal_ranges["MCV"], "MCV")
+show_indicator(mch, *normal_ranges["MCH"], "MCH")
+show_indicator(mchc, *normal_ranges["MCHC"], "MCHC")
+show_indicator(rdw, *normal_ranges["RDW"], "RDW")
+show_indicator(rbc, *normal_ranges["RBC"], "RBC Count")
+show_indicator(serum_iron, *normal_ranges["Serum Iron"], "Serum Iron")
+show_indicator(ferritin, *normal_ranges["Ferritin"], "Ferritin")
+show_indicator(tibc, *normal_ranges["TIBC"], "TIBC")
+show_indicator(transferrin_sat, *normal_ranges["Transferrin Saturation"], "Transferrin Saturation")
 
-    st.subheader("📌 Recommendations:")
-    for rec in recommendations:
-        st.info(rec)
-
-    st.subheader("📊 Blood Parameter Overview")
-    parameters = ['Hemoglobin', 'MCV', 'Serum Iron', 'Ferritin']
-    values = [hb, mcv, serum_iron, ferritin]
-    normal_values = [15, 90, 100, 150]
-
-    fig, ax = plt.subplots()
-    ax.bar(parameters, normal_values, label="Normal", alpha=0.5)
-    ax.bar(parameters, values, label="Patient", alpha=0.7)
-    ax.legend()
-    st.pyplot(fig)
-
-    report = StringIO()
-    report.write(f"Patient Report\n========================\n")
-    report.write(f"Sex: {sex}\nAge: {age} years\n\n")
-    report.write(f"Classification: {' / '.join(classification)}\n\n")
-    report.write(f"Diagnosis:\n")
-    for d in diagnosis:
-        report.write(f"- {d}\n")
-    report.write(f"\nRecommendations:\n")
-    for r in recommendations:
-        report.write(f"- {r}\n")
-
-    st.download_button("Download Report", data=report.getvalue(), file_name="patient_report.txt", mime="text/plain")
-
-# Reset form
+# Button to reset the form
 if st.button("➕ Enter New Patient"):
     reset_form()
 
