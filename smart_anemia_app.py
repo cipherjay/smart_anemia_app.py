@@ -124,20 +124,20 @@ if st.button("🔍 Diagnose Anemia"):
                 low, high = low.get(sex, (None, None))
             record_abnormal(test_name, value, low, high)
 
-        # Diagnosis logic (can remain as-is or be enhanced)
-        if hb_val and hb_val < 13:
-            if mcv_val and mcv_val < 80:
-                if ferritin_val and ferritin_val < 30:
+        # Diagnosis logic (adjusted to handle partial data)
+        if hb_val is not None and hb_val < 13:
+            if mcv_val is not None and mcv_val < 80:
+                if ferritin_val is not None and ferritin_val < 30:
                     diagnosis.append("Iron Deficiency Anemia")
                     recommendations.append("Recommend iron supplementation and search for bleeding sources.")
                 else:
                     diagnosis.append("Microcytic Anemia - Further tests needed.")
-            elif mcv_val and mcv_val > 100:
+            elif mcv_val is not None and mcv_val > 100:
                 diagnosis.append("Macrocytic Anemia - Investigate further.")
             else:
                 diagnosis.append("Normocytic Anemia - Further investigation needed.")
         else:
-            diagnosis.append("No Anemia Detected")
+            diagnosis.append("Diagnosis inconclusive with available data. Please provide more inputs.")
 
         # Display abnormal values
         if abnormal_values:
