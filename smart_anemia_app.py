@@ -39,8 +39,10 @@ with tab2:
         "None", "Microcytic Hypochromic", "Macrocytic", "Normocytic",
         "Target Cells", "Sickle Cells", "Spherocytes", "Basophilic Stippling", "Schistocytes", "Other"
     ))
+    rbc_count = st.text_input("RBC Count (million/µL)")
+    rdw = st.text_input("RDW (%)")
 
-def diagnose_anemia(hb_val, mcv_val, mch_val, mchc_val, ferritin_val, serum_iron_val, tibc_val, retic_val, vit_b12_val, folate_val, morphology, sex, age_val):
+def diagnose_anemia(hb_val, mcv_val, mch_val, mchc_val, ferritin_val, serum_iron_val, tibc_val, retic_val, vit_b12_val, folate_val, morphology, sex, age_val, rbc_count_val, rdw_val):
     if mcv_val < 80:
         cell_size = "Microcytic"
     elif mcv_val > 100:
@@ -109,7 +111,33 @@ with tab3:
             retic_val = float(retic) if retic else None
             vit_b12_val = float(vit_b12) if vit_b12 else None
             folate_val = float(folate) if folate else None
+            rbc_count_val = float(rbc_count) if rbc_count else None
+            rdw_val = float(rdw) if rdw else None
             age_val = int(age) if age else 0
+
+            # تحديد القيم الطبيعية بناءً على الجنس والعمر
+            if sex == "Male":
+                normal_rbc = (4.5, 5.9)  # RBC for males
+            else:
+                normal_rbc = (4.1, 5.1)  # RBC for females
+
+            if age_val < 12:
+                normal_rdw = 14.5  # للأطفال عادةً تكون RDW أقل
+            else:
+                normal_rdw = 14.5  # للكبار نفس القيمة
+
+            # تحقق من أن قيم RBC و RDW داخل النطاق الطبيعي
+            abnormal_results = {}
+
+            if rbc_count_val is not None:
+                if rbc_count_val < normal_rbc[0]:
+                    abnormal_results["RBC Count"] = (rbc_count_val, "Low")
+                elif rbc_count_val > normal_rbc[1]:
+                    abnormal_results["RBC Count"] = (rbc_count_val, "High")
+
+            if rdw_val is not None:
+                if rdw_val > normal_rdw:
+                    abnormal_results["RDW"] = (rdw_val, "High")
 
             # إذا كانت المورفولوجيا فيها Basophilic Stippling، يتم تشخيص Lead Poisoning
             if morphology == "Basophilic Stippling":
@@ -119,7 +147,7 @@ with tab3:
                 severity, cell_size, chromia, cause = diagnose_anemia(
                     hb_val, mcv_val, mch_val, mchc_val,
                     ferritin_val, serum_iron_val, tibc_val,
-                    retic_val, vit_b12_val, folate_val, morphology, sex, age_val
+                    retic_val, vit_b12_val, folate_val, morphology, sex, age_val, rbc_count_val, rdw_val
                 )
 
             diagnosis = f"{severity} {cell_size} {chromia} Anemia"
@@ -131,48 +159,6 @@ with tab3:
                 st.error("⚠️ WARNING: Critical Anemia detected! Immediate action required.")
 
             st.subheader("⚠️ Abnormal Test Results")
-            abnormal_results = {}
-            if hb_val is not None:
-                if hb_val < 10:
-                    abnormal_results["Hemoglobin"] = (hb_val, "Low")
-                elif hb_val > 16:
-                    abnormal_results["Hemoglobin"] = (hb_val, "High")
-            if mcv_val is not None:
-                if mcv_val < 80:
-                    abnormal_results["MCV"] = (mcv_val, "Low")
-                elif mcv_val > 100:
-                    abnormal_results["MCV"] = (mcv_val, "High")
-            if mch_val is not None:
-                if mch_val < 27:
-                    abnormal_results["MCH"] = (mch_val, "Low")
-                elif mch_val > 33:
-                    abnormal_results["MCH"] = (mch_val, "High")
-            if mchc_val is not None:
-                if mchc_val < 32:
-                    abnormal_results["MCHC"] = (mchc_val, "Low")
-                elif mchc_val > 36:
-                    abnormal_results["MCHC"] = (mchc_val, "High")
-            if ferritin_val is not None:
-                if ferritin_val < 30:
-                    abnormal_results["Ferritin"] = (ferritin_val, "Low")
-            if serum_iron_val is not None:
-                if serum_iron_val < 50:
-                    abnormal_results["Serum Iron"] = (serum_iron_val, "Low")
-                elif serum_iron_val > 170:
-                    abnormal_results["Serum Iron"] = (serum_iron_val, "High")
-            if tibc_val is not None:
-                if tibc_val > 400:
-                    abnormal_results["TIBC"] = (tibc_val, "High")
-            if retic_val is not None:
-                if retic_val > 2.5:
-                    abnormal_results["Reticulocyte Count"] = (retic_val, "High")
-            if vit_b12_val is not None:
-                if vit_b12_val < 200:
-                    abnormal_results["Vitamin B12"] = (vit_b12_val, "Low")
-            if folate_val is not None:
-                if folate_val < 3:
-                    abnormal_results["Folate"] = (folate_val, "Low")
-
             if abnormal_results:
                 for test, (value, status) in abnormal_results.items():
                     st.markdown(f"**{test}:** {value} ({status})", unsafe_allow_html=True)
@@ -213,9 +199,13 @@ Reticulocyte Count: {retic} %
 Vitamin B12: {vit_b12} pg/mL
 Folate: {folate} ng/mL
 Morphology: {morphology}
+RBC Count: {rbc_count} million/µL
+RDW: {rdw} %
 
 Diagnosis: {diagnosis}
 Most Likely Cause: {cause}
+
+App Developed By: [Your Name Here] - Smart Anemia Assistant
 """
             st.text_area("Patient Report (Copy if needed)", report, height=400)
 
