@@ -145,12 +145,6 @@ with tab3:
         except Exception as e:
             st.error("Error during diagnosis. Please make sure all fields are filled correctly!")
 
-# Reset button
-if st.sidebar.button("➕ Enter New Patient"):
-    for key in st.session_state.keys():
-        st.session_state[key] = None
-    st.experimental_rerun()
-
 st.sidebar.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
 st.sidebar.markdown(
     "<div style='text-align:center; font-size:22px; color:#007BFF; font-weight:bold;'>"
