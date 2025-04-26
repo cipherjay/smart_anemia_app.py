@@ -2,7 +2,6 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from io import StringIO
 
-# إعداد الصفحة
 st.set_page_config(page_title="Smart Anemia Diagnosis", page_icon="🩺", layout="centered")
 
 # ======= Password Protection =======
@@ -24,7 +23,7 @@ if password != correct_password:
     )
     st.stop()
 
-# ======= Start the main application after correct password =======
+# ======= Main Application =======
 
 st.title("🩺 Smart Anemia Diagnosis Application")
 
@@ -75,53 +74,63 @@ morphology = st.selectbox("Select Blood Cell Morphology:", (
     "Target Cells", "Sickle Cells", "Spherocytes", "Schistocytes", "Basophilic Stippling"
 ), key="morphology")
 
-# CBC parameter evaluation based on sex and age
-st.header("📈 Parameter Evaluation")
+# Diagnose Button
+if st.button("🔍 Diagnose Anemia"):
+    diagnosis = []
+    recommendations = []
 
-# Determine normal ranges based on sex and age
-if age < 12:
-    hb_low, hb_high = 11, 13.5
-elif sex == "Male":
-    hb_low, hb_high = 13, 17
-else:
-    hb_low, hb_high = 12, 16
-
-# Normal ranges for other parameters
-normal_ranges = {
-    "MCV": (80, 100),
-    "MCH": (27, 33),
-    "MCHC": (31, 36),
-    "RDW": (11.5, 14.5),
-    "RBC": (4.5, 6.0),
-    "Serum Iron": (60, 170),
-    "Ferritin": (30, 300),
-    "TIBC": (250, 400),
-    "Transferrin Saturation": (20, 50)
-}
-
-# Function to show indicator arrows
-def show_indicator(value, low, high, label):
-    if value != 0.0:
-        if value < low:
-            st.write(f"{label}: ⬇️ Low")
-        elif value > high:
-            st.write(f"{label}: ⬆️ High")
+    if hb < 13 and hb > 0:
+        if mcv < 80:
+            if ferritin < 30 and serum_iron < 60 and tibc > 400:
+                diagnosis.append("Iron Deficiency Anemia")
+                recommendations.append("Recommend iron supplementation, dietary counseling, and investigation for chronic blood loss.")
+            elif morphology == "Target Cells" or rbc > 5.5:
+                diagnosis.append("Possible Thalassemia")
+                recommendations.append("Suggest hemoglobin electrophoresis and genetic counseling.")
+            elif morphology == "Basophilic Stippling":
+                diagnosis.append("Possible Lead Poisoning")
+                recommendations.append("Recommend blood lead level testing and environmental assessment.")
+            else:
+                diagnosis.append("Microcytic Anemia - Further investigation needed.")
+                recommendations.append("Suggest iron studies and hemoglobin analysis.")
+        elif mcv > 100:
+            if vit_b12 < 200 or folate < 3:
+                diagnosis.append("Megaloblastic Anemia (Vitamin B12 or Folate Deficiency)")
+                recommendations.append("Initiate Vitamin B12 or Folate supplementation and evaluate gastrointestinal absorption disorders.")
+            else:
+                diagnosis.append("Macrocytic Anemia - Further investigation needed.")
+                recommendations.append("Investigate liver disease, alcoholism, or hypothyroidism.")
         else:
-            st.write(f"{label}: ✅ Normal")
+            if retic > 2.5:
+                if morphology == "Schistocytes":
+                    diagnosis.append("Hemolytic Anemia")
+                    recommendations.append("Perform Direct Coombs test, reticulocyte count, LDH, and peripheral smear review.")
+                elif morphology == "Spherocytes":
+                    diagnosis.append("Hereditary Spherocytosis or Autoimmune Hemolytic Anemia")
+                    recommendations.append("Recommend Direct Antiglobulin Test (DAT) and osmotic fragility test.")
+                else:
+                    diagnosis.append("Normocytic Anemia with High Reticulocytes - Possible hemolysis or acute blood loss.")
+                    recommendations.append("Evaluate for hemolysis or bleeding sources.")
+            else:
+                if ferritin > 100 and serum_iron < 60:
+                    diagnosis.append("Anemia of Chronic Disease")
+                    recommendations.append("Manage underlying chronic inflammation, infection, or malignancy.")
+                else:
+                    diagnosis.append("Normocytic Anemia - Further investigation needed.")
+                    recommendations.append("Full clinical evaluation recommended.")
+    elif hb >= 13:
+        diagnosis.append("No Anemia Detected")
+        recommendations.append("No action needed unless clinically indicated. Follow-up as appropriate.")
 
-# Apply indicators
-show_indicator(hb, hb_low, hb_high, "Hemoglobin")
-show_indicator(mcv, *normal_ranges["MCV"], "MCV")
-show_indicator(mch, *normal_ranges["MCH"], "MCH")
-show_indicator(mchc, *normal_ranges["MCHC"], "MCHC")
-show_indicator(rdw, *normal_ranges["RDW"], "RDW")
-show_indicator(rbc, *normal_ranges["RBC"], "RBC Count")
-show_indicator(serum_iron, *normal_ranges["Serum Iron"], "Serum Iron")
-show_indicator(ferritin, *normal_ranges["Ferritin"], "Ferritin")
-show_indicator(tibc, *normal_ranges["TIBC"], "TIBC")
-show_indicator(transferrin_sat, *normal_ranges["Transferrin Saturation"], "Transferrin Saturation")
+    st.subheader("📝 Diagnosis Result:")
+    for d in diagnosis:
+        st.success(f"✔️ {d}")
 
-# Button to reset the form
+    st.subheader("📌 Recommendations:")
+    for rec in recommendations:
+        st.info(f"ℹ️ {rec}")
+
+# Reset button
 if st.button("➕ Enter New Patient"):
     reset_form()
 
