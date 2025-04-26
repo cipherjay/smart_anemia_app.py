@@ -107,42 +107,43 @@ if st.button("🔍 Diagnose Anemia"):
                 if (low is not None and value < low) or (high is not None and value > high):
                     abnormal_values[name] = value
 
-        # Determine diagnosis based on input values
+        # Determine thresholds based on age and sex
+        def get_thresholds(test_name):
+            thresholds = {
+                "hb": {"Male": (13, 17), "Female": (12, 15), "Child": (11, 16)},
+                "mcv": (80, 100),
+                "ferritin": {"Male": (30, 300), "Female": (20, 120)},
+                # Add additional test thresholds here
+            }
+            return thresholds.get(test_name, (None, None))
+
+        # Check for abnormal values based on thresholds
+        for test_name, value in [("hb", hb_val), ("mcv", mcv_val), ("ferritin", ferritin_val)]:
+            low, high = get_thresholds(test_name)
+            if isinstance(low, dict):  # Age/Sex-based thresholds
+                low, high = low.get(sex, (None, None))
+            record_abnormal(test_name, value, low, high)
+
+        # Diagnosis logic (can remain as-is or be enhanced)
         if hb_val and hb_val < 13:
             if mcv_val and mcv_val < 80:
                 if ferritin_val and ferritin_val < 30:
                     diagnosis.append("Iron Deficiency Anemia")
                     recommendations.append("Recommend iron supplementation and search for bleeding sources.")
-                    record_abnormal("Ferritin", ferritin_val, low=30)
-                elif morphology == "Target Cells":
-                    diagnosis.append("Thalassemia Minor")
-                    recommendations.append("Suggest hemoglobin electrophoresis.")
                 else:
                     diagnosis.append("Microcytic Anemia - Further tests needed.")
-                    recommendations.append("Suggest iron studies and hemoglobin analysis.")
             elif mcv_val and mcv_val > 100:
-                if vit_b12_val and vit_b12_val < 200:
-                    diagnosis.append("Vitamin B12 Deficiency Anemia")
-                    recommendations.append("Start Vitamin B12 replacement.")
-                    record_abnormal("Vitamin B12", vit_b12_val, low=200)
-                elif folate_val and folate_val < 3:
-                    diagnosis.append("Folate Deficiency Anemia")
-                    recommendations.append("Start folate replacement.")
-                    record_abnormal("Folate", folate_val, low=3)
-                else:
-                    diagnosis.append("Macrocytic Anemia (Other causes)")
-                    recommendations.append("Investigate liver disease, hypothyroidism, alcoholism.")
+                diagnosis.append("Macrocytic Anemia - Investigate further.")
             else:
-                if retic_val and retic_val > 2.5:
-                    diagnosis.append("Hemolytic Anemia")
-                    recommendations.append("Check Coombs test, LDH, Bilirubin.")
-                    record_abnormal("Reticulocyte Count", retic_val, high=2.5)
-                else:
-                    diagnosis.append("Normocytic Anemia - Further investigation needed.")
-                    recommendations.append("Suggest clinical evaluation.")
+                diagnosis.append("Normocytic Anemia - Further investigation needed.")
         else:
             diagnosis.append("No Anemia Detected")
-            recommendations.append("No further action needed.")
+
+        # Display abnormal values
+        if abnormal_values:
+            st.subheader("⚠️ Abnormal Values:")
+            for key, value in abnormal_values.items():
+                st.warning(f"{key}: {value}")
 
         # Display diagnosis and recommendations
         st.subheader("📝 Diagnosis Result:")
@@ -153,20 +154,10 @@ if st.button("🔍 Diagnose Anemia"):
         for rec in recommendations:
             st.markdown(f"<span style='color:#007BFF;'>➡️ {rec}</span>", unsafe_allow_html=True)
 
-        # Display abnormal values
-        if abnormal_values:
-            st.subheader("⚠️ Abnormal Values:")
-            for key, value in abnormal_values.items():
-                st.warning(f"{key}: {value}")
-
     except ValueError:
         st.error("Invalid input. Please ensure all numeric fields are filled with valid numbers.")
     except Exception as e:
         st.error(f"An unexpected error occurred: {str(e)}")
-
-# Reset Form Button
-if st.button("➕ Enter New Patient"):
-    reset_form()
 
 # Footer Section
 st.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
