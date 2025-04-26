@@ -132,10 +132,6 @@ if st.button("🔍 Diagnose Anemia"):
     except Exception as e:
         st.error("Error in diagnosis. Please ensure all fields are filled correctly.")
 
-# Reset Form Button
-if st.button("➕ Enter New Patient"):
-    reset_form()
-
 st.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
 st.markdown(
     "<div style='text-align:center; font-size:22px; color:#007BFF; font-weight:bold;'>"
