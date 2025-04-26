@@ -2,52 +2,39 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-# Configure the page settings
 st.set_page_config(page_title="Smart Anemia Diagnosis", page_icon="🩺", layout="centered")
 
 # ======= Password Protection =======
-def authenticate_user():
-    """
-    Authenticates the user with a password.
-    """
-    password = st.text_input("Enter Password to Access:", type="password")
-    correct_password = "J2M2"
+password = st.text_input("Enter Password to Access:", type="password")
+correct_password = "J2M2"
 
-    if not password:
-        st.stop()
+if not password:
+    st.stop()
 
-    if password != correct_password:
-        st.markdown(
-            """
-            <h1 style='text-align: center; color: red; font-size: 60px;'>
-            ACCESS DENIED
-            </h1>
-            """,
-            unsafe_allow_html=True,
-        )
-        st.stop()
+if password != correct_password:
+    st.markdown(
+        """
+        <h1 style='text-align: center; color: red; font-size: 60px;'>
+        ACCESS DENIED
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    st.stop()
 
-authenticate_user()
+# ======= Main Application =======
+st.title("🩺 Smart Anemia Diagnosis Application")
 
-# ======= Utility Functions =======
 def reset_form():
-    """
-    Resets the form by clearing session state for all specified keys.
-    """
-    keys_to_reset = [
-        "patient_name", "sex", "age", "hb", "hct", "mcv", "mch", "mchc", "rdw",
-        "rbc", "iron", "ferritin", "tibc", "transf", "retic", "b12", "folate",
-        "ldh", "bilirubin", "hapto", "morphology"
-    ]
+    keys_to_reset = ["patient_name", "sex", "age", "hb", "hct", "mcv", "mch", "mchc", "rdw",
+                     "rbc", "iron", "ferritin", "tibc", "transf", "retic", "b12", "folate",
+                     "ldh", "bilirubin", "hapto", "morphology"]
     for key in keys_to_reset:
         if key in st.session_state:
             st.session_state[key] = ""
     st.experimental_rerun()
 
-# ======= Main Application =======
-st.title("🩺 Smart Anemia Diagnosis Application")
-
-# Patient Information Section
+# Patient Information
 st.header("👤 Patient Basic Information")
 patient_name = st.text_input("Patient Name", value="", placeholder="Enter patient name", key="patient_name")
 sex = st.selectbox("Sex", ("Male", "Female"), key="sex")
@@ -63,15 +50,15 @@ mchc = st.text_input("MCHC (g/dL)", value="", placeholder="Enter MCHC...", key="
 rdw = st.text_input("RDW (%)", value="", placeholder="Enter RDW...", key="rdw")
 rbc = st.text_input("RBC Count (million/µL)", value="", placeholder="Enter RBC Count...", key="rbc")
 
-# Iron Studies Section
+# Iron Studies
 st.header("🧪 Iron Studies")
 serum_iron = st.text_input("Serum Iron (µg/dL)", value="", placeholder="Enter Serum Iron...", key="iron")
 ferritin = st.text_input("Ferritin (ng/mL)", value="", placeholder="Enter Ferritin...", key="ferritin")
 tibc = st.text_input("TIBC (µg/dL)", value="", placeholder="Enter TIBC...", key="tibc")
 transferrin_sat = st.text_input("Transferrin Saturation (%)", value="", placeholder="Enter Transferrin Saturation...", key="transf")
 
-# Additional Blood Tests Section
-st.header("🧫 Additional Blood Tests")
+# Additional Blood Tests
+st.header("🧬 Additional Blood Tests")
 retic = st.text_input("Reticulocyte Count (%)", value="", placeholder="Enter Reticulocyte Count...", key="retic")
 vit_b12 = st.text_input("Vitamin B12 (pg/mL)", value="", placeholder="Enter Vitamin B12...", key="b12")
 folate = st.text_input("Folate (ng/mL)", value="", placeholder="Enter Folate...", key="folate")
@@ -79,7 +66,7 @@ ldh = st.text_input("LDH (U/L)", value="", placeholder="Enter LDH...", key="ldh"
 indirect_bilirubin = st.text_input("Indirect Bilirubin (mg/dL)", value="", placeholder="Enter Indirect Bilirubin...", key="bilirubin")
 haptoglobin = st.text_input("Haptoglobin (mg/dL)", value="", placeholder="Enter Haptoglobin...", key="hapto")
 
-# Peripheral Blood Morphology Section
+# Peripheral Blood Morphology
 st.header("🔬 Peripheral Blood Morphology")
 morphology = st.selectbox("Select Blood Cell Morphology:", (
     "None", "Microcytic Hypochromic", "Macrocytic", "Normocytic Normochromic",
@@ -89,7 +76,6 @@ morphology = st.selectbox("Select Blood Cell Morphology:", (
 # Diagnose Button
 if st.button("🔍 Diagnose Anemia"):
     try:
-        # Convert input fields to float values
         hb_val = float(hb) if hb else 0.0
         mcv_val = float(mcv) if mcv else 0.0
         ferritin_val = float(ferritin) if ferritin else 0.0
@@ -100,7 +86,6 @@ if st.button("🔍 Diagnose Anemia"):
         vit_b12_val = float(vit_b12) if vit_b12 else 0.0
         folate_val = float(folate) if folate else 0.0
 
-        # Diagnosis Logic
         diagnosis = []
         recommendations = []
 
@@ -136,7 +121,6 @@ if st.button("🔍 Diagnose Anemia"):
             diagnosis.append("No Anemia Detected")
             recommendations.append("No further action needed.")
 
-        # Display Results
         st.subheader("📝 Diagnosis Result:")
         for d in diagnosis:
             st.success(f"✅ {d}")
@@ -148,7 +132,10 @@ if st.button("🔍 Diagnose Anemia"):
     except Exception as e:
         st.error("Error in diagnosis. Please ensure all fields are filled correctly.")
 
-# Footer
+# Reset Form Button
+if st.button("➕ Enter New Patient"):
+    reset_form()
+
 st.markdown("<hr style='border:1px solid gray'>", unsafe_allow_html=True)
 st.markdown(
     "<div style='text-align:center; font-size:22px; color:#007BFF; font-weight:bold;'>"
