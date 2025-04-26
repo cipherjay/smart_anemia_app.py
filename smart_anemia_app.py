@@ -34,7 +34,7 @@ if "reset" not in st.session_state:
 def reset_form():
     st.session_state.clear()
     st.session_state.reset = True
-    st.experimental_rerun()
+    st.rerun()
 
 # Patient Information
 st.header("👤 Patient Basic Information")
