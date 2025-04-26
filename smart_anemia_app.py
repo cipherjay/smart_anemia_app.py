@@ -211,3 +211,57 @@ App Developed By: [Your Name Here] - Smart Anemia Assistant
 
         except Exception as e:
             st.error(f"Error during diagnosis: {e}")
+
+
+with tab3:
+    st.header("Diagnosis & Plan")
+
+    if st.button("🔍 Diagnose"):
+        try:
+            # التأكد من القيم المدخلة: إذا كانت فارغة، يتم تعيين None
+            hb_val = float(hb) if hb else None
+            mcv_val = float(mcv) if mcv else None
+            mch_val = float(mch) if mch else None
+            mchc_val = float(mchc) if mchc else None
+            ferritin_val = float(ferritin) if ferritin else None
+            serum_iron_val = float(serum_iron) if serum_iron else None
+            tibc_val = float(tibc) if tibc else None
+            retic_val = float(retic) if retic else None
+            vit_b12_val = float(vit_b12) if vit_b12 else None
+            folate_val = float(folate) if folate else None
+            rbc_count_val = float(rbc_count) if rbc_count else None
+            rdw_val = float(rdw) if rdw else None
+            hct_val = float(hct) if hct else None
+            age_val = int(age) if age else 0
+
+            # تحديد القيم الطبيعية بناءً على الجنس والعمر
+            if sex == "Male":
+                normal_values = {"Hb": 13.8, "MCV": 90, "MCH": 30, "MCHC": 33, "Ferritin": 100}
+            else:
+                normal_values = {"Hb": 12.0, "MCV": 85, "MCH": 28, "MCHC": 32, "Ferritin": 80}
+
+            # التشخيص استنادًا إلى القيم المتاحة
+            diagnosis = []
+            
+            # التحقق من القيم المدخلة وتقديم التشخيص بناءً على البيانات المتاحة
+            if rbc_count_val and rbc_count_val < 4.0:
+                diagnosis.append("Anemia: Low RBC count detected.")
+            
+            if hct_val and hct_val < 36:
+                diagnosis.append("Possible anemia: Low Hematocrit level.")
+                
+            if rdw_val and rdw_val > 14:
+                diagnosis.append("Possible anisocytosis: High RDW.")
+            
+            if ferritin_val and ferritin_val < normal_values["Ferritin"]:
+                diagnosis.append("Iron deficiency suspected: Low Ferritin level.")
+            
+            if diagnosis:
+                st.write("Diagnosis based on the available data:")
+                for item in diagnosis:
+                    st.write(f"- {item}")
+            else:
+                st.write("No significant abnormalities detected based on the available data.")
+
+        except Exception as e:
+            st.write("Error in diagnosis: ", e)
