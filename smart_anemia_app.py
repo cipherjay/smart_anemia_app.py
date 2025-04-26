@@ -35,7 +35,7 @@ def reset_form():
     st.experimental_rerun()
 
 # Patient Information
-st.header("👤 Patient Information")
+st.header("👤 Patient Basic Information")
 patient_name = st.text_input("Patient Name", value="", placeholder="Enter patient name", key="patient_name")
 sex = st.selectbox("Sex", ("Male", "Female"), key="sex")
 age = st.text_input("Age (years)", value="", placeholder="Enter age", key="age")
