@@ -98,16 +98,16 @@ with tab3:
 
     if st.button("🔍 Diagnose"):
         try:
-            hb_val = float(hb) if hb else 0.0
-            mcv_val = float(mcv) if mcv else 0.0
-            mch_val = float(mch) if mch else 0.0
-            mchc_val = float(mchc) if mchc else 0.0
-            ferritin_val = float(ferritin) if ferritin else 0.0
-            serum_iron_val = float(serum_iron) if serum_iron else 0.0
-            tibc_val = float(tibc) if tibc else 0.0
-            retic_val = float(retic) if retic else 0.0
-            vit_b12_val = float(vit_b12) if vit_b12 else 0.0
-            folate_val = float(folate) if folate else 0.0
+            hb_val = float(hb) if hb else None
+            mcv_val = float(mcv) if mcv else None
+            mch_val = float(mch) if mch else None
+            mchc_val = float(mchc) if mchc else None
+            ferritin_val = float(ferritin) if ferritin else None
+            serum_iron_val = float(serum_iron) if serum_iron else None
+            tibc_val = float(tibc) if tibc else None
+            retic_val = float(retic) if retic else None
+            vit_b12_val = float(vit_b12) if vit_b12 else None
+            folate_val = float(folate) if folate else None
             age_val = int(age) if age else 0
 
             severity, cell_size, chromia, cause = diagnose_anemia(
@@ -126,30 +126,50 @@ with tab3:
 
             st.subheader("⚠️ Abnormal Test Results")
             abnormal_results = {}
-            if hb_val < 10:
-                abnormal_results["Hemoglobin"] = hb_val
-            if mcv_val < 80:
-                abnormal_results["MCV"] = mcv_val
-            if mch_val < 27:
-                abnormal_results["MCH"] = mch_val
-            if mchc_val < 32:
-                abnormal_results["MCHC"] = mchc_val
-            if ferritin_val < 30:
-                abnormal_results["Ferritin"] = ferritin_val
-            if serum_iron_val < 50:
-                abnormal_results["Serum Iron"] = serum_iron_val
-            if tibc_val > 400:
-                abnormal_results["TIBC"] = tibc_val
-            if retic_val > 2.5:
-                abnormal_results["Reticulocyte Count"] = retic_val
-            if vit_b12_val < 200:
-                abnormal_results["Vitamin B12"] = vit_b12_val
-            if folate_val < 3:
-                abnormal_results["Folate"] = folate_val
+            if hb_val is not None:
+                if hb_val < 10:
+                    abnormal_results["Hemoglobin"] = (hb_val, "Low")
+                elif hb_val > 16:
+                    abnormal_results["Hemoglobin"] = (hb_val, "High")
+            if mcv_val is not None:
+                if mcv_val < 80:
+                    abnormal_results["MCV"] = (mcv_val, "Low")
+                elif mcv_val > 100:
+                    abnormal_results["MCV"] = (mcv_val, "High")
+            if mch_val is not None:
+                if mch_val < 27:
+                    abnormal_results["MCH"] = (mch_val, "Low")
+                elif mch_val > 33:
+                    abnormal_results["MCH"] = (mch_val, "High")
+            if mchc_val is not None:
+                if mchc_val < 32:
+                    abnormal_results["MCHC"] = (mchc_val, "Low")
+                elif mchc_val > 36:
+                    abnormal_results["MCHC"] = (mchc_val, "High")
+            if ferritin_val is not None:
+                if ferritin_val < 30:
+                    abnormal_results["Ferritin"] = (ferritin_val, "Low")
+            if serum_iron_val is not None:
+                if serum_iron_val < 50:
+                    abnormal_results["Serum Iron"] = (serum_iron_val, "Low")
+                elif serum_iron_val > 170:
+                    abnormal_results["Serum Iron"] = (serum_iron_val, "High")
+            if tibc_val is not None:
+                if tibc_val > 400:
+                    abnormal_results["TIBC"] = (tibc_val, "High")
+            if retic_val is not None:
+                if retic_val > 2.5:
+                    abnormal_results["Reticulocyte Count"] = (retic_val, "High")
+            if vit_b12_val is not None:
+                if vit_b12_val < 200:
+                    abnormal_results["Vitamin B12"] = (vit_b12_val, "Low")
+            if folate_val is not None:
+                if folate_val < 3:
+                    abnormal_results["Folate"] = (folate_val, "Low")
 
             if abnormal_results:
-                for test, value in abnormal_results.items():
-                    st.markdown(f"**{test}:** {value} (Abnormal)", unsafe_allow_html=True)
+                for test, (value, status) in abnormal_results.items():
+                    st.markdown(f"**{test}:** {value} ({status})", unsafe_allow_html=True)
 
             st.subheader("💡 Recommendations")
             if cause == "Iron Deficiency Anemia":
