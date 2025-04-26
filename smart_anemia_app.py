@@ -98,7 +98,7 @@ def diagnose_anemia(hb_val, mcv_val, mch_val, mchc_val, ferritin_val, serum_iron
 with tab3:
     st.header("Diagnosis & Plan")
 
-    if st.button("🔍 Diagnose"):
+    if st.button("🔍 Diagnose", key="diagnose_button"):
         try:
             # التأكد من القيم المدخلة: إذا كانت فارغة، يتم تعيين None
             hb_val = float(hb) if hb else None
@@ -216,7 +216,7 @@ App Developed By: [Your Name Here] - Smart Anemia Assistant
 with tab3:
     st.header("Diagnosis & Plan")
 
-    if st.button("🔍 Diagnose"):
+    if st.button("🔍 Diagnose", key="diagnose_button"):
         try:
             # التأكد من القيم المدخلة: إذا كانت فارغة، يتم تعيين None
             hb_val = float(hb) if hb else None
@@ -265,3 +265,8 @@ with tab3:
 
         except Exception as e:
             st.write("Error in diagnosis: ", e)
+
+
+# Adding a personalized signature
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center;'>Jana K</h4>", unsafe_allow_html=True)
