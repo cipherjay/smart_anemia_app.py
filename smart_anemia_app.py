@@ -13,18 +13,12 @@ if not password:
 
 if password != correct_password:
     st.markdown(
-        """
-        <h1 style='text-align: center; color: red; font-size: 60px;'>
-        ACCESS DENIED
-        </h1>
-        """,
+        "<h1 style='text-align: center; color: red; font-size: 60px;'>ACCESS DENIED</h1>",
         unsafe_allow_html=True
     )
     st.stop()
 
-# ======= Main Application =======
-st.title("🩺 Smart Anemia Diagnosis Application")
-
+# ======= Helper Functions =======
 def reset_form():
     keys_to_reset = ["patient_name", "sex", "age", "hb", "hct", "mcv", "mch", "mchc", "rdw",
                      "rbc", "iron", "ferritin", "tibc", "transf", "retic", "b12", "folate",
@@ -33,6 +27,70 @@ def reset_form():
         if key in st.session_state:
             st.session_state[key] = ""
     st.experimental_rerun()
+
+def get_reference_ranges(sex, age):
+    age = int(age) if age else 0
+    ranges = {}
+
+    if sex == "Male":
+        if age >= 18:
+            ranges = {
+                "Hemoglobin": (13.5, 17.5),
+                "MCV": (80, 100),
+                "MCHC": (32, 36),
+                "Ferritin": (30, 400),
+                "Serum Iron": (65, 175),
+                "TIBC": (250, 450),
+                "Transferrin Saturation": (20, 50),
+                "Reticulocyte Count": (0.5, 2.5),
+                "Vitamin B12": (200, 900),
+                "Folate": (3, 20)
+            }
+        else:
+            ranges = {
+                "Hemoglobin": (11.5, 15.5),
+                "MCV": (75, 87),
+                "MCHC": (32, 36),
+                "Ferritin": (7, 140),
+                "Serum Iron": (50, 120),
+                "TIBC": (240, 450),
+                "Transferrin Saturation": (16, 50),
+                "Reticulocyte Count": (0.5, 1.5),
+                "Vitamin B12": (200, 900),
+                "Folate": (5, 21)
+            }
+    elif sex == "Female":
+        if age >= 18:
+            ranges = {
+                "Hemoglobin": (12.0, 16.0),
+                "MCV": (80, 100),
+                "MCHC": (32, 36),
+                "Ferritin": (12, 150),
+                "Serum Iron": (50, 170),
+                "TIBC": (250, 450),
+                "Transferrin Saturation": (15, 50),
+                "Reticulocyte Count": (0.5, 2.5),
+                "Vitamin B12": (200, 900),
+                "Folate": (3, 20)
+            }
+        else:
+            ranges = {
+                "Hemoglobin": (11.5, 15.5),
+                "MCV": (75, 87),
+                "MCHC": (32, 36),
+                "Ferritin": (7, 140),
+                "Serum Iron": (50, 120),
+                "TIBC": (240, 450),
+                "Transferrin Saturation": (16, 50),
+                "Reticulocyte Count": (0.5, 1.5),
+                "Vitamin B12": (200, 900),
+                "Folate": (5, 21)
+            }
+
+    return ranges
+
+# ======= Main Application =======
+st.title("🩺 Smart Anemia Diagnosis Application")
 
 # Patient Information
 st.header("👤 Patient Basic Information")
@@ -76,42 +134,68 @@ morphology = st.selectbox("Select Blood Cell Morphology:", (
 # Diagnose Button
 if st.button("🔍 Diagnose Anemia"):
     try:
-        hb_val = float(hb) if hb else 0.0
-        mcv_val = float(mcv) if mcv else 0.0
-        ferritin_val = float(ferritin) if ferritin else 0.0
-        serum_iron_val = float(serum_iron) if serum_iron else 0.0
-        tibc_val = float(tibc) if tibc else 0.0
-        transferrin_sat_val = float(transferrin_sat) if transferrin_sat else 0.0
-        retic_val = float(retic) if retic else 0.0
-        vit_b12_val = float(vit_b12) if vit_b12 else 0.0
-        folate_val = float(folate) if folate else 0.0
-
+        ranges = get_reference_ranges(sex, age)
+        abnormal_results = []
         diagnosis = []
         recommendations = []
 
-        if hb_val < 13 and hb_val > 0:
-            if mcv_val < 80:
-                if ferritin_val < 30:
+        def check_range(name, value):
+            low, high = ranges.get(name, (None, None))
+            if low is not None and value is not None:
+                if value < low:
+                    abnormal_results.append(f"{name}: Low")
+                elif value > high:
+                    abnormal_results.append(f"{name}: High")
+
+        hb_val = float(hb) if hb else None
+        mcv_val = float(mcv) if mcv else None
+        ferritin_val = float(ferritin) if ferritin else None
+        serum_iron_val = float(serum_iron) if serum_iron else None
+        tibc_val = float(tibc) if tibc else None
+        transferrin_sat_val = float(transferrin_sat) if transferrin_sat else None
+        retic_val = float(retic) if retic else None
+        vit_b12_val = float(vit_b12) if vit_b12 else None
+        folate_val = float(folate) if folate else None
+        mchc_val = float(mchc) if mchc else None
+
+        check_range("Hemoglobin", hb_val)
+        check_range("MCV", mcv_val)
+        check_range("MCHC", mchc_val)
+        check_range("Ferritin", ferritin_val)
+        check_range("Serum Iron", serum_iron_val)
+        check_range("TIBC", tibc_val)
+        check_range("Transferrin Saturation", transferrin_sat_val)
+        check_range("Reticulocyte Count", retic_val)
+        check_range("Vitamin B12", vit_b12_val)
+        check_range("Folate", folate_val)
+
+        if hb_val and hb_val < ranges["Hemoglobin"][0]:
+            if mcv_val and mcv_val < 80:
+                if mchc_val and mchc_val < 32:
+                    diagnosis.append("Microcytic Hypochromic Anemia")
+                else:
+                    diagnosis.append("Microcytic Anemia")
+
+                if ferritin_val and ferritin_val < ranges["Ferritin"][0]:
                     diagnosis.append("Iron Deficiency Anemia")
                     recommendations.append("Recommend iron supplementation and search for bleeding sources.")
                 elif morphology == "Target Cells":
                     diagnosis.append("Thalassemia Minor")
                     recommendations.append("Suggest hemoglobin electrophoresis.")
                 else:
-                    diagnosis.append("Microcytic Anemia - Further tests needed.")
                     recommendations.append("Suggest iron studies and hemoglobin analysis.")
-            elif mcv_val > 100:
-                if vit_b12_val < 200:
+            elif mcv_val and mcv_val > 100:
+                if vit_b12_val and vit_b12_val < 200:
                     diagnosis.append("Vitamin B12 Deficiency Anemia")
                     recommendations.append("Start Vitamin B12 replacement.")
-                elif folate_val < 3:
+                elif folate_val and folate_val < 3:
                     diagnosis.append("Folate Deficiency Anemia")
                     recommendations.append("Start folate replacement.")
                 else:
                     diagnosis.append("Macrocytic Anemia (Other causes)")
                     recommendations.append("Investigate liver disease, hypothyroidism, alcoholism.")
             else:
-                if retic_val > 2.5:
+                if retic_val and retic_val > 2.5:
                     diagnosis.append("Hemolytic Anemia")
                     recommendations.append("Check Coombs test, LDH, Bilirubin.")
                 else:
@@ -124,6 +208,11 @@ if st.button("🔍 Diagnose Anemia"):
         st.subheader("📝 Diagnosis Result:")
         for d in diagnosis:
             st.success(f"✅ {d}")
+
+        if abnormal_results:
+            st.subheader("⚠️ Abnormal Results:")
+            for result in abnormal_results:
+                st.warning(result)
 
         st.subheader("📌 Recommendations:")
         for rec in recommendations:
